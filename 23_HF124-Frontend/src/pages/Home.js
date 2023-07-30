@@ -1,6 +1,6 @@
 import Navigationbar from "../components/Navigationbar";
-import { Map, MapMarker } from "react-kakao-maps-sdk";
-import React, { useEffect, useState } from "react";
+import { Map, MapMarker, MapInfoWindow } from "react-kakao-maps-sdk";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
@@ -10,17 +10,87 @@ import {
   faLocationCrosshairs,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../components/Modal";
+import Nearby from "../components/NearbyPage";
+
+// NearbyModal 컴포넌트 선언
+const NearbyModal = (props) => {
+  const { closeModal, marker } = props;
+
+  // 정렬 방식 변경 핸들러
+  const handleSortChange = (sortType) => {
+    console.log(`Sorting by ${sortType}`);
+    // TODO: 이곳에서 실제로 게시글 정렬을 수행합니다.
+  };
+
+  return (
+    <NearbyModalStyled>
+      <div>
+        <button className="close-button" onClick={closeModal}>
+          ✖
+        </button>
+        <div className="sorting-buttons">
+          <button onClick={() => handleSortChange("popular")}>인기순</button>
+          <button onClick={() => handleSortChange("recent")}>최신순</button>
+        </div>
+        <Nearby marker={marker} />
+      </div>
+    </NearbyModalStyled>
+  );
+};
+
+const latChangeByLevel = {
+  13: 0.37,
+  12: 0.19,
+  11: 0.09,
+  10: 0.05,
+  9: 0.025,
+  8: 0.011,
+  7: 0.006,
+  6: 0.003,
+  5: 0.0015,
+  4: 0.0007,
+  3: 0.00035,
+  2: 0.00018,
+  1: 0.00009,
+};
 
 const Home = () => {
   const [markerData, setMarkerData] = useState(null);
-  const [latestMarkers, setLatestMarkers] = useState(null); // New state variable for the latest markers
+  const [latestMarkers, setLatestMarkers] = useState(null);
   const navigate = useNavigate();
   const [write, setWrite] = useState(false);
+  const [showNearbyModal, setShowNearbyModal] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [isMarkerHovered, setMarkerHovered] = useState(false);
+  const [isMarkerClicked, setMarkerClicked] = useState(false);
 
+  const markerHoverTimeout = useRef();
+  const [currentLevel, setCurrentLevel] = useState(13);
+  const handleMouseOverMarker = (marker) => {
+    if (markerHoverTimeout.current) {
+      clearTimeout(markerHoverTimeout.current);
+    }
+    setMarkerHovered(marker);
+  };
+  const handleZoomChange = (newLevel) => {
+    setCurrentLevel(newLevel);
+  };
+  const handleMouseOutMarker = () => {
+    markerHoverTimeout.current = setTimeout(() => {
+      setMarkerHovered(null);
+    }, 300); // 마우스가 마커 밖으로 벗어났을 때 딜레이를 주는 시간 (ms 단위)
+  };
   const handleSearchClick = () => {
     navigate("/Search");
   };
 
+  useEffect(() => {
+    return () => {
+      if (markerHoverTimeout.current) {
+        clearTimeout(markerHoverTimeout.current);
+      }
+    };
+  }, []);
   const baseURL = "http://localhost:3000/";
   useEffect(() => {
     const fetchMarkerData = async () => {
@@ -40,11 +110,11 @@ const Home = () => {
 
         // For each group, keep only the latest marker.
         const latestMarkers = Object.values(markerGroups).map(
-          (group) => group.sort((a, b) => b.createdAt - a.createdAt)[0] // Assuming 'createdAt' is a valid timestamp.
+          (group) => group.sort((a, b) => b.createdAt - a.createdAt)[0]
         );
 
         setMarkerData(markerData);
-        setLatestMarkers(latestMarkers); // Update the state with the latest markers
+        setLatestMarkers(latestMarkers);
         console.log(response.data);
       } catch (err) {
         console.error(err);
@@ -54,70 +124,152 @@ const Home = () => {
     fetchMarkerData();
   }, []);
 
+  const handleMarkerClick = (marker) => {
+    if (markerHoverTimeout.current) {
+      clearTimeout(markerHoverTimeout.current);
+    }
+    setMarkerHovered(null);
+    setMarkerClicked(true);
+    setSelectedMarker(marker);
+    setShowNearbyModal(true);
+  };
+
+  const closeNearbyModal = () => {
+    setSelectedMarker(null);
+    setShowNearbyModal(false);
+    setMarkerClicked(false);
+    setMarkerHovered(null);
+  };
+
   return (
-    <Container>
-      <Header>
-        <SearchInput
-          type="text"
-          onClick={handleSearchClick}
-          placeholder="검색"
-        />
-        <IconContainer onClick={() => setWrite(!write)}>
-          {write && <Modal closeModal={() => setWrite(!write)}></Modal>}
-          <FontAwesomeIcon icon={faSquarePlus} size="3x" color={"#f97800"} />
-        </IconContainer>
-      </Header>
-      <MapContainer>
-        <Map
-          center={{
-            lat: 36.8, //세로
-            lng: 127.5, //가로
-          }}
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
-          level={13}
-          maxLevel={13} //지도화면 더 이상 축소금지
-        >
-          {latestMarkers &&
-            latestMarkers.map((marker, index) => (
-              <Circle>
-                <MapMarker
-                  key={index}
-                  position={{
-                    lat: marker.y,
-                    lng: marker.x,
-                  }}
-                  image={{
-                    src: marker.post_images[0].imageURL.replace(/\\/g, "/"),
-                    size: {
-                      width: 50,
-                      height: 50,
-                    },
-                    options: {
-                      offset: {
-                        x: 27,
-                        y: 69,
-                      },
-                    },
-                  }}
-                />
-              </Circle>
-            ))}
-          <LocationIcon
-            icon={faLocationCrosshairs}
-            size="2x"
-            color={"#f97800"}
+    <div>
+      <Container>
+        <Header>
+          <SearchInput
+            type="text"
+            onClick={handleSearchClick}
+            placeholder="검색"
           />
-        </Map>
-      </MapContainer>
-      <Navigationbar />
-    </Container>
+          <IconContainer onClick={() => setWrite(!write)}>
+            {write && <Modal closeModal={() => setWrite(!write)} />}
+            <FontAwesomeIcon icon={faSquarePlus} size="3x" color={"#f97800"} />
+          </IconContainer>
+        </Header>
+        <MapContainer>
+          <Map
+            center={{
+              lat: 36.8,
+              lng: 127.5,
+            }}
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+            level={13}
+            maxLevel={13}
+            onZoomChanged={(map) => setCurrentLevel(map.getLevel())} // 지도 줌 변경 시 핸들러 함수
+          >
+            {latestMarkers &&
+              latestMarkers.map((marker, index) => (
+                <Circle key={index}>
+                  <MapMarker
+                    position={{
+                      lat: marker.y,
+                      lng: marker.x,
+                    }}
+                    clickable={true}
+                    onMouseOver={() => handleMouseOverMarker(marker)}
+                    onMouseOut={handleMouseOutMarker}
+                    onClick={() => handleMarkerClick(marker)}
+                  />
+                  {isMarkerHovered === marker && isMarkerClicked === false && (
+                    <MapInfoWindow
+                      position={{
+                        lat: marker.y + latChangeByLevel[currentLevel], // latitude 값을 조정하여 정보창을 위로 이동시킵니다.
+                        lng: marker.x,
+                      }}
+                    >
+                      <img
+                        src={
+                          marker.post_images[0]
+                            ? marker.post_images[0].imageURL.replace(/\\/g, "/")
+                            : ""
+                        }
+                        alt="post"
+                        style={{ width: "150px", height: "100px" }}
+                      />
+                    </MapInfoWindow>
+                  )}
+                </Circle>
+              ))}
+          </Map>
+        </MapContainer>
+        <Navigationbar />
+      </Container>
+      {showNearbyModal && selectedMarker && (
+        <NearbyModal closeModal={closeNearbyModal} marker={selectedMarker} />
+      )}
+    </div>
   );
 };
-
 export default Home;
+
+const NearbyModalStyled = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  & > div {
+    position: relative;
+    width: 300px;
+    height: 500px;
+    padding: 40px;
+    text-align: center;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    box-shadow: 0 2px 3px 0 rgba(34, 36, 38, 0.15);
+  }
+
+  & .close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border: none;
+    color: rgba(0, 0, 0, 0.7);
+    background-color: transparent;
+    font-size: 20px;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  & .sorting-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  & .sorting-buttons > button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f97800;
+    color: white;
+    font-size: 16px;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+`;
 
 const Circle = styled.div`
   border-radius: 20px;

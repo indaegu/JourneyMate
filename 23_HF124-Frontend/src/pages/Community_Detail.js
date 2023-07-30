@@ -10,27 +10,27 @@ const Community_Detail = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [data, setData] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const baseURL = "http://localhost:3000/";
 
   useEffect(() => {
+    const jwtToken = localStorage.getItem("jwtToken");
+
+    setCurrentUser(jwtToken);
+
     const fetchData = async () => {
       try {
         const responsePost = await axios.get(baseURL + `community/${postId}`); // postId를 API 호출에 사용하여 게시글 데이터 가져오기
-        console.log(responsePost)
         setData(responsePost.data);
-        
         const responseComments = await axios.get(baseURL + `community/comments/${postId}`); // postId를 API 호출에 사용하여 댓글 데이터 가져오기
-        console.log(responseComments)
         setComments(responseComments.data);
-          
       } catch (error) {
         console.log(error);
       }
     };
     fetchData();
-    
-  },[]);
+  }, []);
   
   const handleNewCommentChange = (event) => {
     setNewComment(event.target.value);
@@ -62,6 +62,21 @@ const Community_Detail = () => {
     });
   };
   
+  const EditCommunity = () => {
+    const postID = window.location.pathname.split("/").pop();
+    navigate("/Community_Write", { state: { data: data, mode: 'edit', postId: postID } });
+  };
+
+  const deleteCommunity = async () => {
+    const postID = window.location.pathname.split("/").pop();
+    try {
+      await axios.delete(`http://localhost:3000/community/${postID}`);
+      navigate(-1);
+      
+    } catch (error) {
+      console.log(error);
+    }
+  };
   
 
   const deleteComment = (tcommentId) => {
@@ -94,6 +109,19 @@ const Community_Detail = () => {
     <Page>
       <Top>
         <StyledButton onClick={() => navigate(-1)}>{"<"}</StyledButton>
+        <Button>
+          {currentUser && data?.post.userID === currentUser && ( 
+            <button onClick={EditCommunity}>
+              수정
+            </button>
+          )}
+          {currentUser && data?.post.userID === currentUser && ( 
+            <button onClick={() => deleteCommunity(data.post.tpostID)}>
+              삭제
+            </button>
+          )}
+          
+        </Button>
       </Top>
       <Title>{data && data.post.title}</Title>
       <Info>
@@ -137,9 +165,11 @@ const Community_Detail = () => {
                 </CommentDate>
               </CommentContent>
               <Button>
-              {/* {userId === comment.userID && ( */}
-    <button onClick={() => deleteComment(comment.tcommentId)}>삭제</button>
-  {/* )} */}
+                {currentUser && comment.userID === currentUser && (
+                  <button onClick={() => deleteComment(comment.tcommentId)}>
+                    삭제
+                  </button>
+                )}
               </Button>
             </Comment>
           ))}
@@ -163,6 +193,12 @@ const Page = styled.div`
 const Top = styled.div`
   margin-left: 20px;
   margin-right: 20px;
+  display: flex;
+  justify-content: space-between;
+
+  button{
+    margin-right:5px;
+  }
 `;
 
 const Title = styled.div`

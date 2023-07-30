@@ -1,3 +1,4 @@
+//Community_Search.js
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -5,7 +6,7 @@ import styled from "styled-components";
 import Navigationbar from "../components/Navigationbar";
 
 axios.defaults.withCredentials = true;
-
+const baseURL = "http://localhost:3000/";
 const Community_Search = () => {
   const navigate = useNavigate();
   const locationRef = useRef();
@@ -14,6 +15,8 @@ const Community_Search = () => {
   const [tagList, setTagList] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState({});
   const [posts, setPosts] = useState([]);
+  const [searchTriggered, setSearchTriggered] = useState(true); //Community에 searchTriggered값을 true로
+  //날려서 검색 useeffect가 실행되게 하기 위함
 
   const searchLocation = async () => {
     const query = locationRef.current.value;
@@ -35,7 +38,7 @@ const Community_Search = () => {
     }
   };
 
-  const onKeyPress = (e) => {
+  const onKeyDown = (e) => {
     if (e.target.value.length !== 0 && e.key === "Enter") {
       submitTagItem();
     }
@@ -56,38 +59,37 @@ const Community_Search = () => {
     setTagList(filteredTagList);
   };
 
+  const handleCompleteBtnClick = async () => {
+    // Send a GET request to server
+    try {
+      const response = await axios.get(
+        `${baseURL}community/searchcount`,
+        {
+          params: {
+            location: selectedLocation.address_name
+          }
+        }
+      );
+      console.log(response);
+      if (response.status === 200) {
+        return true; // Return true on success
+      } else {
+        console.error('Failed to update search count', response.status);
+        return false; // Return false on failure
+      }
+    } catch (error) {
+      console.error('An error occurred while updating search count', error);
+      return false; // Return false on error
+    }
+  };
   const handleLocationSelect = (location) => {
     locationRef.current.value = location.place_name;
     setSelectedLocation({
-      address_name: location.address_name,
+      address_name: location.place_name,
     });
     setLocationList([]);
   };
 
-  const baseURL = "http://localhost:3000/";
-
-  const getPostsByLocationAndTags = async () => {
-    try {
-      // 클라이언트에서 tag와 location을 쿼리 매개변수로 보내도록 수정
-      const response = await axios.get(`${baseURL}community/search`, {
-        params: {
-          tags: tagList.join(","),
-          location: locationRef.current.value, // location을 주소 이름으로 설정
-        },
-      });
-  
-      if (response.status === 200) {
-        setPosts(response.data);
-        navigate("/community", { state: { posts } });
-        console.log(response.data);
-      } else {
-        console.error("게시물 검색 실패", response.status);
-      }
-    } catch (error) {
-      console.error("게시물을 검색하는 도중 에러가 발생했습니다", error);
-    }
-  };
-  
 
   return (
     <div>
@@ -119,7 +121,7 @@ const Community_Search = () => {
           return (
             <TagItem key={index}>
               <Text>{tagItem}</Text>
-              <tagButton onClick={deleteTagItem}>X</tagButton>
+              <TagButton onClick={deleteTagItem}>X</TagButton>
             </TagItem>
           );
         })}
@@ -128,22 +130,41 @@ const Community_Search = () => {
           placeholder="태그를 입력해주세요!"
           onChange={(e) => setTagItem(e.target.value)}
           value={tagItem}
-          onKeyPress={onKeyPress}
+          onKeyDown={onKeyDown}
         />
       </Info>
-
       <Button>
-        <button className="complete_btn" onClick={getPostsByLocationAndTags}>
+        <button
+          className="complete_btn"
+          onClick={async () => {
+            const isSuccess = await handleCompleteBtnClick();
+            if (isSuccess) {
+              navigate("/Community", {
+                state: { posts, location: selectedLocation, searchTriggered, tagList },
+              });
+            }
+          }}
+        >
           찾기
         </button>
       </Button>
-
       <Navigationbar />
     </div>
   );
 };
 
 export default Community_Search;
+const TagButton = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 5px;
+  background-color: white;
+  border-radius: 50%;
+  color: tomato;
+`;
 
 const Button = styled.div`
   display: flex;

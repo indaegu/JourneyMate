@@ -1,31 +1,57 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef,useEffect } from "react";
+import { useNavigate,useLocation } from "react-router-dom";
 import styled from "styled-components";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
-
 // const token=localStorage.getItem('jwtToken');
 axios.defaults.withCredentials = true;
 
+const baseURL = "http://localhost:3000/";
+
 const Community_Write = () => {
+  const navigate = useNavigate();
+  const detaildata = useLocation();
+
   const titleRef = useRef();
   const locationRef = useRef();
   const tagRef = useRef();
   const photoRefs = useRef([]);
   const contentRefs = useRef([]);
-  const navigate = useNavigate();
+
+
+  
   const [locationList, setLocationList] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [data, setData] = useState([{ photo: "", content: "", file: null }]);
-
-
   const [tagItem, setTagItem] = useState(""); // 태그 입력값
+  const [detail,setDetail] = useState(detaildata.state ? detaildata.state.data.post : "" )
+
+  const [title,setTitle] = useState(detail ? detail.title : '');
+
+  const [data, setData] = useState(
+    detaildata.state
+      ? detaildata.state.data.post.post_images.map((image) => ({
+          photo: "",
+          content: image.content,
+          file: 1,
+          previewURL: baseURL+image.imageURL,  // 이미지 URL을 previewURL에 저장
+        }))
+      : [{ photo: "", content: "", file: null }]
+  );
+  
+
   const [tagList, setTagList] = useState([]); // 태그 리스트
 
+  useEffect(() => {
+    if(detaildata.state !== null) {
+      let tagcontent = detaildata.state.data.post.tags.map((tag)=>(tag.content));
+      setTagList(tagcontent)
+    }
+  }, []);  
 
+  console.log(detail)
   
   //위치를 입력 받을때 kakaoapi를 활용하기 위함
   const searchLocation = async () => {
@@ -52,7 +78,7 @@ const Community_Write = () => {
 
 
    // 태그 입력 처리
-   const onKeyPress = (e) => {
+   const onKeyDown = (e) => {
     if (e.target.value.length !== 0 && e.key === "Enter") {
       submitTagItem();
     }
@@ -97,7 +123,7 @@ const Community_Write = () => {
     // 자동으로 높이를 조절하여 사용자가 입력한 영역에 맞게 크기를 조절
     contentRefs.current[i].style.height = "auto";
     contentRefs.current[i].style.height =
-      contentRefs.current[i].scrollHeight + "px";
+    contentRefs.current[i].scrollHeight + "px";
   };
 
   /** 선택한 사진 및 내용 입력 영역 제거 */ 
@@ -116,8 +142,6 @@ const Community_Write = () => {
   };
   
 
-  // 서버에서 데이터를 받아서 띄우면 필요없는 부분
-  //const { onCreate } = useContext(CommunityDispatchContext);
 
   /** 사진 파일 내용을 처리 */
   const onFileInput = (e, i) => {
@@ -197,21 +221,69 @@ const Community_Write = () => {
     }
   };
 
+  const handleEditsubmit = async () => {
+    if (titleRef.current.value.length < 1) {
+      titleRef.current.focus();
+      return;
+    } else if (data.some((item, i) => item.content.length < 1)) {
+      contentRefs.current.find((ref, i) => data[i].content.length < 1)?.focus();
+      return;
+    } else if (window.confirm("게시글을 수정하시겠습니까?")) {
   
+      const formData = new FormData();
+      const postId = detail.tpostID;
+  
+      // 사진과 내용 데이터를 FormData에 추가
+      data.forEach((item, i) => {
+        formData.append("photos[]", item.file);
+        formData.append("contents[]", item.content);
+      });
+      
+      // 기존의 jsonData 대신, 각각의 필드를 별도로 추가
+      formData.append("title", titleRef.current.value);
+      formData.append("location", selectedLocation.address_name);
+  
+      // 다른 정보를 그대로 보내고 싶다면 이렇게도 추가 가능
+      formData.append("tags", JSON.stringify(tagList)); // array는 JSON 문자열로 변환해서 보냅니다.
+  
+      // 서버로 formData전송
+      try {
+        await axios.put(`http://localhost:3000/community/${postId}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data", // multipart/form-data로 보낸다고 명시
+          },
+        });
+  
+        navigate("/Community", { replace: true }); // 작성하는 페이지로 뒤로오기 금지
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+  
+
   return (
     <Write>
       <Navigation>
         <Header>
           <button className="back_btn" onClick={() => navigate(-1)}> {"<"} </button>
-          <button className="complete_btn" onClick={handleSubmit}> 등록 </button>
+          {detaildata.state === null ? 
+          <button className="complete_btn" onClick={handleSubmit}> 등록 </button> :
+          <button className="complete_btn" onClick={handleEditsubmit}> 수정 </button>
+          }
+          
         </Header>
       </Navigation>
       <div>
         <Title>
-          <input type="text" name="title" placeholder="제목을 입력하세요" ref={titleRef} />
+          {detaildata.state === null ? 
+          <input type="text" name="title" placeholder="제목을 입력하세요" ref={titleRef} /> : 
+          <input type="text" name="title" value={title} ref={titleRef} onChange={(e) => setTitle(e.target.value)} />}
         </Title>
         <Info>
-          <input name="location" placeholder="위치 입력" ref={locationRef} onChange={searchLocation} />
+          {detaildata.state === null ? 
+          <input name="location" placeholder="위치 입력" ref={locationRef} onChange={searchLocation} /> : 
+          <input name="location" placeholder={detail.location} ref={locationRef} onChange={searchLocation} /> }
           {locationList.map((location, i) => (
             <li key={i} onClick={() => handleLocationSelect(location)}>
               {location.place_name}
@@ -221,17 +293,12 @@ const Community_Write = () => {
             return (
               <TagItem key={index}>
                 <Text>{tagItem}</Text>
-                <tagButton onClick={deleteTagItem}>X</tagButton>
+                <TagButton onClick={deleteTagItem}>X</TagButton>
               </TagItem>
             );
           })}
-          <TagInput
-            type="text"
-            placeholder="태그를 입력해주세요!"
-            onChange={(e) => setTagItem(e.target.value)}
-            value={tagItem}
-            onKeyPress={onKeyPress}
-          />
+          <TagInput type="text" placeholder="태그를 입력해주세요!" onChange={(e) => setTagItem(e.target.value)}
+            value={tagItem} onKeyDown={onKeyDown} />
         </Info>
       </div>
       <Addform>
@@ -550,7 +617,7 @@ const TagItem = styled.div`
 
 const Text = styled.span``;
 
-const tagButton = styled.button`
+const TagButton = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;

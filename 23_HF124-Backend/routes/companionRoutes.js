@@ -16,13 +16,19 @@ router.put('/:cpostID', upload.array('files', 1),authMiddleware, uploadControlle
 
 //동행인 게시글 조회
 router.get('/',authMiddleware, postController.getclist);
+router.get('/search',authMiddleware, postController.getCSearchlist);
 router.get('/:cpostID', upload.array('files', 1),authMiddleware, postController.getcpost);
+
 
 // 동행인 댓글 작성, 삭제
 router.get('/comments/:cpostID', authMiddleware, commentController.companionGetComments);
 router.post('/comments/:cpostID',authMiddleware, commentController.companionAddComment);
 router.delete('/comments/:cpostID',authMiddleware, commentController.companionDeleteComment);
-
+router.get('/commentCount/:cpostID', async (req, res) => {
+    const cpostID = req.query.cpostID;
+    const count = await commentController.updateCCommentCounts(cpostID);
+    res.status(200).json({ message: '댓글 갯수', commentCount: count });
+});
 
 router.get('/posts/search-keyword', uploadController.searchKeyword);
 router.get('/posts', postController.getclist);

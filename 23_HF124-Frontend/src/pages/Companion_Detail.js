@@ -10,10 +10,14 @@ const Companion_Detail = () => {
   const [data, setData] = useState();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
 
   const baseURL = "http://localhost:3000/";
 
   useEffect(() => {
+    const jwtToken = localStorage.getItem("jwtToken");
+
+    setCurrentUser(jwtToken);
     const fetchData = async () => {
       try {
         const responsePost = await axios.get(baseURL + `companion/${postId}`); // postId를 API 호출에 사용하여 게시글 데이터 가져오기
@@ -59,6 +63,17 @@ const Companion_Detail = () => {
     });
   };
 
+  const deleteCompanion = async () => {
+    const postID = window.location.pathname.split("/").pop();
+    try {
+      await axios.delete(`http://localhost:3000/companion/${postID}`);
+      navigate(-1);
+      
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
   const deleteComment = (ccommentID) => {
     const cpostID = window.location.pathname.split("/").pop();
     axios
@@ -93,12 +108,17 @@ const Companion_Detail = () => {
       <Page>
         <Top>
           <StyledButton onClick={() => navigate(-1)}>{"<"}</StyledButton>
+          {currentUser && data?.post.userID === currentUser && ( 
+            <button onClick={() => deleteCompanion(data.post.tpostID)}>
+              삭제
+            </button>
+          )}
         </Top>
         <Title>{data && data.post.title}</Title>
         <Info>
           위치 : {data && data.post.location}
           <br />
-          {/* 태그 : {data && data.post.tag} */}
+          태그 : {data && data.post.tags && data.post.tags.map(tag => tag.content).join(', ')}
           <br />
           성별 : {data && data.post.pgender}
           <br />
@@ -145,13 +165,16 @@ const Companion_Detail = () => {
                   </CommentDate>
                 </CommentContent>
                 <Button>
-                  <button onClick={() => deleteComment(comment.ccommentID)}>삭제</button>
+                {currentUser && comment.userID === currentUser && (
+                  <button onClick={() => deleteComment(comment.tcommentId)}>
+                    삭제
+                  </button>
+                )}
                 </Button>
               </Comment>
             ))}
           </CommentList>
         </CommentSection>
-        <Detail_Nav />
       </Page>
     );
   }

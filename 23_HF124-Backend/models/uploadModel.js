@@ -174,6 +174,10 @@ const cPost = sequelize.define('companion posts', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  commentCount: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   title: {
     type: DataTypes.STRING,
     allowNull: false
@@ -274,12 +278,40 @@ CTagging.init({
   },
   cpostID: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'companion posts',
+      key: 'cpostID'
+    }
   },
 }, {
   sequelize,
   modelName: 'CTagging',
   tableName: 'ctaggings',
+  timestamps: false
+});
+
+
+class SearchHistories extends Model {}
+
+SearchHistories.init({
+  searchId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  location: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  searchDate: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+}, {
+  sequelize, 
+  modelName: 'search_histories',
   timestamps: false
 });
 
@@ -299,8 +331,26 @@ Tag.belongsToMany(tPost, {
   through: TTagging,
   foreignKey: 'tagID',
   otherKey: 'tpostID',
-  as: 'posts'
+  as: 'tPosts'
 });
+
+// cPost와 Tag 사이의 관계 설정
+cPost.belongsToMany(Tag, {
+  through: CTagging,
+  foreignKey: 'cpostID',
+  otherKey: 'tagID',
+  as: 'tags'
+});
+
+// Tag와 cPost 사이의 관계 설정
+Tag.belongsToMany(cPost, {
+  through: CTagging,
+  foreignKey: 'tagID',
+  otherKey: 'cpostID',
+  as: 'cPosts'
+});
+
+
 
 Tag.hasMany(CTagging, { foreignKey: 'tagID' });
 CTagging.belongsTo(Tag, { foreignKey: 'tagID' });
@@ -309,4 +359,4 @@ CTagging.belongsTo(Tag, { foreignKey: 'tagID' });
 cPostImage.belongsTo(cPost, { foreignKey: 'cpostID',onDelete: 'CASCADE' });
 cPost.hasMany(cPostImage, { foreignKey: 'cpostID' });
 
-module.exports = {tPost, tPostImage, cPost, cPostImage,Tag, TTagging,CTagging };
+module.exports = {tPost, tPostImage, cPost, cPostImage,Tag, TTagging,CTagging,SearchHistories };
