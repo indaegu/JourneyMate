@@ -89,7 +89,9 @@ const Community = () => {
   const goDetail = (postId) => {
     navigate(`/Community_Detail/${postId}`);
   };
-
+  const goUserDetail = (userId) => {
+    navigate(`/UserDetail/${userId}`);
+  };
   useEffect(() => {
     if (searchTriggered) return; // 검색이 실행되면 아무 것도 하지 않습니다.
     const fetchMoreData = async () => {
@@ -233,19 +235,33 @@ const Community = () => {
                     </div>
                   </Picture>
                   <Title>
-                    {post.title}
+                    <Title1> {post.title}</Title1>
                     <Titlebar>
-                      {post.User.profileImage === null ? (
-                        <img
-                          alt="chosen"
-                          style={{ width: "100%", borderRadius: "100%" }}
-                        />
-                      ) : (
-                        <img src={`${baseURL}${post.User.profileImage.replace(/\\/g, "/"  )}`}
-                          style={{ width: "10%", borderRadius: "100%" }}
-                        />
-                      )}
-                      {post.userID}
+                      <DetailInfo>
+                        <ProfileImage
+                          onClick={(e) => {
+                            e.stopPropagation(); // 부모로의 클릭 이벤트 전파를 중단합니다.
+                            goUserDetail(post.userID);
+                          }}
+                        >
+                          {" "}
+                          {post.User.profileImage === null ? (
+                            <img
+                              alt="chosen"
+                              style={{ width: "100%", borderRadius: "100%" }}
+                            />
+                          ) : (
+                            <img
+                              src={`${baseURL}${post.User.profileImage.replace(
+                                /\\/g,
+                                "/"
+                              )}`}
+                              style={{ width: "100%", borderRadius: "100%" }}
+                            />
+                          )}{" "}
+                        </ProfileImage>
+                        <Id>{post.userID}</Id>
+                      </DetailInfo>
                       <Heart>
                         <FontAwesomeIcon icon={faHeartSolid} color="red" />
                         {post.likeCount}
@@ -274,9 +290,39 @@ const Community = () => {
 // Your styled components remain unchanged...
 export default Community;
 
+const ProfileImage = styled.div`
+  background-color: rgb(254, 237, 229);
+  width: 30px;
+  height: 30px;
+  border-radius: 80%;
+  display: flex;
+  align-items: center;
+
+  margin-bottom: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const Id = styled.div`
+  margin-top: 1px;
+  font-size: 15px;
+  margin-left: 10px;
+`;
+
+const DetailInfo = styled.div`
+  display: flex;
+`;
 const Container = styled.div`
   position: relative;
   width: 100%;
+`;
+const Title1 = styled.div`
+  margin-bottom: 10px;
 `;
 
 const Header = styled.div`
@@ -376,6 +422,7 @@ const Heart = styled.div`
   display: flex;
   justify-content: flex-end; // 아이콘을 우측으로 정렬
   gap: 3px; // 아이콘 사이의 간격 조정
+  margin-top: 5px;
 `;
 const Comment = styled.div`
   font-size: 15px;

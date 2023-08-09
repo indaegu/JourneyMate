@@ -23,6 +23,7 @@ import Companion_Write from "./components/Companion_Write";
 import Community_Detail from "./pages/Community_Detail";
 import Companion_Detail from "./pages/Companion_Detail";
 import Search from "./pages/Search";
+import UserDetail from "./pages/UserDetail";
 import Community_Search from "./pages/Community_Search";
 import Companion_Search from "./pages/Companion_Search";
 // import {socket,SOCKET_EVENT,SocketContext} from "./components/Chatting/Chat";
@@ -80,6 +81,7 @@ function App() {
             <Route path="/Companion_Write" element={<Companion_Write />} />
             <Route path="/Community_Search" element={<Community_Search />} />
             <Route path="/Companion_Search" element={<Companion_Search />} />
+            <Route path="/UserDetail/:userId" element={<UserDetail />} />
           </Routes>
         </div>
       </SocketContext.Provider>

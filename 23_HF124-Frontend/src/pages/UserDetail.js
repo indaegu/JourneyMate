@@ -4,19 +4,17 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./listForm.css";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGlobe,
   faUserGroup,
-  faPen,
   faUser,
-  faScroll,
 } from "@fortawesome/free-solid-svg-icons";
 
 const baseURL = "http://localhost:3000/";
 
-function MyPage() {
+function UserDetail() {
   const navigate = useNavigate();
   const [write, setWrite] = useState(false);
   const [selectedColor, setSelectedColor] = useState("faGlobe");
@@ -24,34 +22,33 @@ function MyPage() {
   const [companionData, setCompanionData] = useState(null);
   const [image, setImage] = useState(null);
   const [userData, setUserData] = useState(null); // new state for storing user data
+  const { userId } = useParams();
 
   const getUserProfile = async () => {
     try {
-      const resUser = await axios.get(baseURL + `mypage/profile`);
+      // const userId = window.location.pathname.split("/").pop();
+      console.log(userId);
+      const resUser = await axios.get(baseURL + `users/profile/${userId}`, {
+        userID: userId,
+      });
       setUserData(resUser.data);
-      setImage(resUser.data.profile[0].profileImage);
+      setImage(resUser.data.profile.profileImage);
     } catch (error) {
       console.log(error);
     }
   };
 
-  /* 상세페이지 이동 */
-  const goDetail = (postId) => {
-    // postId 인자 추가
-
-    navigate(`/Community_Detail/${postId}`); // postId를 경로의 일부로 사용
-  };
-
-  const goDetails = (postId) => {
-    // postId 인자 추가
-
-    navigate(`/Companion_Detail/${postId}`); // postId를 경로의 일부로 사용
-  };
-
   const getCommunity = async () => {
     try {
-      const resCommunity = await axios.get(baseURL + `mypage/community`);
+      //const userId = window.location.pathname.split("/").pop();
+      const resCommunity = await axios.get(
+        baseURL + `users/community/${userId}`,
+        {
+          userID: userId,
+        }
+      );
       setCommunityData(resCommunity.data);
+      console.log(resCommunity);
     } catch (error) {
       console.log(error);
     }
@@ -59,7 +56,11 @@ function MyPage() {
 
   const getCompanion = async () => {
     try {
-      const resCompanion = await axios.get(baseURL + `mypage/companion`);
+      console.log("성공");
+      //const userId = window.location.pathname.split("/").pop();
+      const resCompanion = await axios.get(
+        baseURL + `users/companion/${userId}`
+      );
       console.log(resCompanion.data);
       setCompanionData(resCompanion.data);
     } catch (error) {
@@ -79,54 +80,38 @@ function MyPage() {
       getCompanion();
     }
   }, [selectedColor]);
+
+  /* 상세페이지 이동 */
+  const goDetail = (postId) => {
+    // postId 인자 추가
+    navigate(`/Community_Detail/${postId}`); // postId를 경로의 일부로 사용
+  };
+
+  const goDetails = (postId) => {
+    // postId 인자 추가
+    navigate(`/Companion_Detail/${postId}`); // postId를 경로의 일부로 사용
+  };
   return (
     <div className="Wrap">
-      <div className="TMenuBar">
-        <p>마이페이지</p>
-      </div>
       <div className="topView">
-        <div className="ContentsBox">
-          <MyInfoBox>
-            <div style={{ alignItems: "center" }}>
-              <Circle
-                onClick={() => {
-                  navigate("/Profile");
-                }}
-              >
-                {image ? (
-                  <img
-                    src={`${baseURL}${image && image.replace(/\\/g, "/")}`}
-                    alt="chosen"
-                    style={{ width: "100%", borderRadius: "100%" }}
-                  />
-                ) : (
-                  <FontAwesomeIcon icon={faUser} size="2x" color={"#f97800"} />
-                )}
-              </Circle>
-              내정보
-            </div>
-          </MyInfoBox>
-          <MyMenuMiddle>
-            <div>
-              <Circle onClick={() => setWrite(!write)}>
-                {write && <Modal closeModal={() => setWrite(!write)}></Modal>}
-                <FontAwesomeIcon icon={faPen} size="2x" color={"#f97800"} />
-              </Circle>
-              글쓰기
-            </div>
-            <div>
-              <Circle
-                onClick={() => {
-                  navigate("/Scrap");
-                }}
-              >
-                <FontAwesomeIcon icon={faScroll} size="2x" color={"#f97800"} />
-              </Circle>
-              스크랩
-            </div>
-          </MyMenuMiddle>
-        </div>
+        <MyInfoBox>
+          <div style={{ alignItems: "center" }}>
+            <Circle>
+              {image ? (
+                <img
+                  src={`${baseURL}${image && image.replace(/\\/g, "/")}`}
+                  alt="chosen"
+                  style={{ width: "100%", borderRadius: "100%" }}
+                />
+              ) : (
+                <FontAwesomeIcon icon={faUser} size="2x" color={"#f97800"} />
+              )}
+            </Circle>
+          </div>
+          {userId}
+        </MyInfoBox>
       </div>
+
       <MyList>
         <div>
           <FontAwesomeIcon
@@ -138,7 +123,6 @@ function MyPage() {
             }}
           />
         </div>
-
         <div>
           <FontAwesomeIcon
             icon={faUserGroup}
@@ -150,6 +134,7 @@ function MyPage() {
           />
         </div>
       </MyList>
+
       <Content>
         <CommunityList>
           {/* faGlobe 선택됐을 때 (CommunityData) */}
@@ -205,6 +190,9 @@ function MyPage() {
     </div>
   );
 }
+
+const Name = styled.div``;
+
 const MyInfoBox = styled.div`
   display: flex;
   justify-content: space-around;
@@ -213,6 +201,9 @@ const MyInfoBox = styled.div`
   margin-top: 20px;
   align-items: center;
   text-align: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 `;
 const MyMenuMiddle = styled.div`
   height: 120px;
@@ -251,8 +242,9 @@ const MyList = styled.div`
   &::after {
     content: "";
     position: absolute;
-    top: 55%;
+    top: 50%;
     left: 50%;
+
     width: 1px;
     height: 70%; // 원하는 높이(%)로 조절
     background-color: #dddddd;
@@ -281,4 +273,4 @@ const Picture = styled.div`
     object-fit: cover; // 이미지의 비율을 유지하면서, 요소에 꽉 차게 표시
   }
 `;
-export default MyPage;
+export default UserDetail;

@@ -107,6 +107,7 @@ const Companion = () => {
             rows: [...prevData.posts.rows, ...response.data.posts.rows],
           },
         }));
+        console.log(response);
       } catch (error) {
         console.log(error);
       }
@@ -233,9 +234,28 @@ const Companion = () => {
                     </div>
                   </Picture>
                   <Title>
-                    {post.title}
+                    <Title1> {post.title}</Title1>
                     <Titlebar>
-                      {post.userID}
+                      <DetailInfo>
+                        <ProfileImage>
+                          {" "}
+                          {post.users.profileImage === null ? (
+                            <img
+                              alt="chosen"
+                              style={{ width: "100%", borderRadius: "100%" }}
+                            />
+                          ) : (
+                            <img
+                              src={`${baseURL}${post.users.profileImage.replace(
+                                /\\/g,
+                                "/"
+                              )}`}
+                              style={{ width: "100%", borderRadius: "100%" }}
+                            />
+                          )}{" "}
+                        </ProfileImage>
+                        <Id>{post.userID}</Id>
+                      </DetailInfo>
                       <Heart>
                         <FontAwesomeIcon icon={faCommentSolid} color="F97800" />
                       </Heart>
@@ -258,6 +278,34 @@ const Companion = () => {
     </Container>
   );
 };
+const ProfileImage = styled.div`
+  background-color: rgb(254, 237, 229);
+  width: 30px;
+  height: 30px;
+  border-radius: 80%;
+  display: flex;
+  align-items: center;
+
+  margin-bottom: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+const Id = styled.div`
+  margin-top: 1px;
+  font-size: 15px;
+  margin-left: 10px;
+`;
+const DetailInfo = styled.div`
+  display: flex;
+`;
+const Title1 = styled.div`
+  margin-bottom: 10px;
+`;
 const ScrollToTopButton = styled.button`
   border-radius: 50%;
   border: none;
@@ -352,9 +400,13 @@ const CompanionItem = styled.div`
 `;
 
 const Title = styled.div`
+  font-size: 20px;
+  font-weight: bold;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
+  align-items: center;
 `;
 
 const Picture = styled.div`
