@@ -258,6 +258,7 @@ const Page = styled.div`
 `;
 
 const Top = styled.div`
+  
   margin-left: 20px;
   margin-right: 20px;
   display: flex;
@@ -314,6 +315,52 @@ const ImageContainer = styled.div`
     margin-bottom: 20px;
     border-radius: 10px;
   }
+`
+
+const HostContainer = styled.div`
+  border-bottom: 1px solid #dddddd;
+  padding:15px;
+  margin:20px;
+  display:flex;
+  justify-content: space-between;
+`
+
+const HostInfo = styled.div`
+
+`
+
+const HostName = styled.div`
+
+`
+
+const HostAge = styled.div`
+`
+
+const HostGender = styled.div`
+`
+
+const JoinButton = styled.button`
+`
+
+
+const TagContainer = styled.div`
+  margin: 30px;
+`
+
+const TagList = styled.div`
+  display:flex;
+  justify-content: space-around;
+`
+const TagItem = styled.div`
+  background-color: #dddddd;
+  border-radius: 10px;
+  font-size: 13px;
+  padding: 5px;
+`
+
+const Main = styled.div`
+  margin:20px;
+
 `;
 
 const HostContainer = styled.div`

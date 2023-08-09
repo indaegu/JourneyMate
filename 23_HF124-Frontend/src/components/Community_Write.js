@@ -141,6 +141,7 @@ const Community_Write = () => {
     newData.splice(i, 1); // index i의 항목을 삭제
     setData(newData); // 변경된 배열로 data 상태를 업데이트
 
+
     /* 
       photoRefs.current에서 인덱스 i와 일치하지 않는 항목들만 필터링하여 새로운 배열을 생성하고 
       photoRefs.current를 이렇게 변경된 배열로 업데이트한다. 
@@ -149,6 +150,7 @@ const Community_Write = () => {
 
     photoRefs.current = photoRefs.current.filter((_, idx) => idx !== i);
     contentRefs.current = contentRefs.current.filter((_, idx) => idx !== i); // contentRefs 배열에서 index i의 항목을 제거
+
   };
 
   /* 게시글 삭제 - 사진 삭제 기능 - 서버로 게시물 ID, i를 보냄 */ //////////////////////////////////////////////////////////////////////////////////////////////
@@ -445,7 +447,7 @@ const Community_Write = () => {
 
       <Addform>
         {data.map((val, i) => (
-          <RepeatWrapper key={i}>
+          <RepeatWrapper key={i} >
             <PhotoWrapper>
               <AddButton onClick={handleClick}> + </AddButton>
               {val.previewURL ? (
