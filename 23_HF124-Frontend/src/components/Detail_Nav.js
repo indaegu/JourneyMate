@@ -11,7 +11,7 @@ import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import { faComment as faCommentSolid } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark as faBookmarkSolid } from "@fortawesome/free-solid-svg-icons";
 
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://api.journeymate.link/";
 
 const Detail_Nav = () => {
   const [activeHeart, setActiveHeart] = useState(false);

@@ -12,7 +12,7 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://api.journeymate.link/";
 
 function UserDetail() {
   const navigate = useNavigate();

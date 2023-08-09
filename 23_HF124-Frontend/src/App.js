@@ -29,7 +29,7 @@ import Companion_Search from "./pages/Companion_Search";
 // import {socket,SOCKET_EVENT,SocketContext} from "./components/Chatting/Chat";
 import io from "socket.io-client";
 
-const ENDPOINT = "http://localhost:3000";
+const ENDPOINT = "https://api.journeymate.link";
 
 export const SocketContext = createContext(); // SocketContext 생성
 

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
 axios.defaults.withCredentials = true;
 
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://api.journeymate.link/";
 
 const Community_Write = () => {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const Community_Write = () => {
     }
     try {
       const response = await axios.get(
-        `http://localhost:3000/community/posts/search-keyword?query=${locationRef.current.value}`
+        `https://api.journeymate.link/community/posts/search-keyword?query=${locationRef.current.value}`
       );
       if (response.status === 200) {
         // response.data가 배열인지 확인하고, 배열이 아니면 빈 배열로 설정
@@ -317,11 +317,15 @@ const Community_Write = () => {
       formData.append("jsonData", JSON.stringify(jsonData)); // 위치와 제목데이터를 formdata에 담기
       // 서버로 formData전송
       try {
-        await axios.post("http://localhost:3000/community/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data", // multipart/form-data로 보낸다고 명시
-          },
-        });
+        await axios.post(
+          "https://api.journeymate.link/community/upload",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data", // multipart/form-data로 보낸다고 명시
+            },
+          }
+        );
 
         navigate("/Community", { replace: true }); // 작성하는 페이지로 뒤로오기 금지
       } catch (error) {
@@ -346,7 +350,7 @@ const Community_Write = () => {
       const contentArray = data.map((item) => item.content);
       // 서버로 formData전송
       try {
-        await axios.put(`http://localhost:3000/community/${postId}`, {
+        await axios.put(`https://api.journeymate.link/community/${postId}`, {
           title: titleRef.current.value,
           location: selectedLocation.address_name,
           tags: JSON.stringify(tagList),

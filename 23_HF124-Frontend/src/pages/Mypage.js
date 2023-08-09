@@ -14,7 +14,7 @@ import {
   faScroll,
 } from "@fortawesome/free-solid-svg-icons";
 
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://api.journeymate.link/";
 
 function MyPage() {
   const navigate = useNavigate();

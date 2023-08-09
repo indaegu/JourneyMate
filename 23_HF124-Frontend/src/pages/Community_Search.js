@@ -6,7 +6,7 @@ import styled from "styled-components";
 import Navigationbar from "../components/Navigationbar";
 
 axios.defaults.withCredentials = true;
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://api.journeymate.link/";
 const Community_Search = () => {
   const navigate = useNavigate();
   const locationRef = useRef();
@@ -26,7 +26,7 @@ const Community_Search = () => {
     }
     try {
       const response = await axios.get(
-        `http://localhost:3000/community/posts/search-keyword?query=${locationRef.current.value}`
+        `https://api.journeymate.link/community/posts/search-keyword?query=${locationRef.current.value}`
       );
       if (response.status === 200) {
         setLocationList(Array.isArray(response.data) ? response.data : []);
@@ -61,27 +61,24 @@ const Community_Search = () => {
 
   const handleCompleteBtnClick = async () => {
     try {
-      const response = await axios.get(
-        `${baseURL}community/searchcount`,
-        {
-          params: {
-            location: selectedLocation.address_name
-          }
-        }
-      );
+      const response = await axios.get(`${baseURL}community/searchcount`, {
+        params: {
+          location: selectedLocation.address_name,
+        },
+      });
       console.log(response);
       if (response.status === 200) {
         return true; // Return true on success
       } else {
-        console.error('Failed to update search count', response.status);
+        console.error("Failed to update search count", response.status);
         return false; // Return false on failure
       }
     } catch (error) {
-      console.error('An error occurred while updating search count', error);
+      console.error("An error occurred while updating search count", error);
       return false; // Return false on error
     }
   };
-  
+
   const handleLocationSelect = (location) => {
     locationRef.current.value = location.place_name;
     setSelectedLocation({
@@ -89,7 +86,6 @@ const Community_Search = () => {
     });
     setLocationList([]);
   };
-
 
   return (
     <div>
@@ -140,7 +136,12 @@ const Community_Search = () => {
             const isSuccess = await handleCompleteBtnClick();
             if (isSuccess) {
               navigate("/Community", {
-                state: { posts, location: selectedLocation, searchTriggered, tagList },
+                state: {
+                  posts,
+                  location: selectedLocation,
+                  searchTriggered,
+                  tagList,
+                },
               });
             }
           }}

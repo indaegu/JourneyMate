@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faPhone } from "@fortawesome/free-solid-svg-icons";
 import ProfileDetail from "./ProfileDetail";
 import bcrypt from "bcryptjs";
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://api.journeymate.link/";
 
 const Profile = () => {
   const navigate = useNavigate();

@@ -6,7 +6,7 @@ import SearchModal from "../components/SearchModal";
 import React, { useState, useEffect } from "react";
 import axios from "axios"; // Assuming you are using axios for HTTP requests
 
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://api.journeymate.link/";
 
 const Search = () => {
   const [write, setWrite] = useState(false);

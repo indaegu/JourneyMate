@@ -17,7 +17,7 @@ const Companion_Write = () => {
   const [tagItem, setTagItem] = useState(""); // 태그 입력값
   const [tagList, setTagList] = useState([]); // 태그 리스트
   const detaildata = useLocation();
-  const baseURL = "http://localhost:3000/";
+  const baseURL = "https://api.journeymate.link/";
   const navigate = useNavigate();
   const [locationList, setLocationList] = useState([]);
 
@@ -73,7 +73,7 @@ const Companion_Write = () => {
     }
     try {
       const response = await axios.get(
-        `http://localhost:3000/community/posts/search-keyword?query=${locationRef.current.value}`
+        `https://api.journeymate.link/community/posts/search-keyword?query=${locationRef.current.value}`
       );
       if (response.status === 200) {
         // response.data가 배열인지 확인하고, 배열이 아니면 빈 배열로 설정
@@ -192,7 +192,7 @@ const Companion_Write = () => {
       };
       formData.append("jsonData", JSON.stringify(jsonData));
       axios
-        .post("http://localhost:3000/companion/cupload", formData, {
+        .post("https://api.journeymate.link/companion/cupload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -248,7 +248,7 @@ const Companion_Write = () => {
       formData.append("jsonData", JSON.stringify(jsonData));
       const postId = detail.cpostID;
       axios
-        .put(`http://localhost:3000/companion/${postId}`, formData, {
+        .put(`https://api.journeymate.link/companion/${postId}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

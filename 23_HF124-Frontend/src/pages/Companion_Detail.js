@@ -12,7 +12,7 @@ const Companion_Detail = () => {
   const [newComment, setNewComment] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
 
-  const baseURL = "http://localhost:3000/";
+  const baseURL = "https://api.journeymate.link/";
 
   useEffect(() => {
     const jwtToken = localStorage.getItem("jwtToken");
@@ -63,7 +63,7 @@ const Companion_Detail = () => {
     const cpostID = window.location.pathname.split("/").pop();
     axios
       .post(
-        `http://localhost:3000/companion/comments/${cpostID}`,
+        `https://api.journeymate.link/companion/comments/${cpostID}`,
         newCommentObject,
         {
           headers: {
@@ -91,7 +91,7 @@ const Companion_Detail = () => {
   const deleteCompanion = async () => {
     const postID = window.location.pathname.split("/").pop();
     try {
-      await axios.delete(`http://localhost:3000/companion/${postID}`);
+      await axios.delete(`https://api.journeymate.link/companion/${postID}`);
       navigate(-1);
     } catch (error) {
       console.log(error);
@@ -101,7 +101,7 @@ const Companion_Detail = () => {
   const deleteComment = (ccommentID) => {
     const cpostID = window.location.pathname.split("/").pop();
     axios
-      .delete(`http://localhost:3000/companion/comments/${cpostID}`, {
+      .delete(`https://api.journeymate.link/companion/comments/${cpostID}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // JWT 토큰을 Authorization 헤더에 포함시킵니다.
         },

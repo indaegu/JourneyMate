@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentMedical } from "@fortawesome/free-solid-svg-icons";
 import { SocketContext } from "../App"; // SocketContext 추가
 import axios from "axios";
-const baseURL = "http://localhost:3000";
+const baseURL = "https://api.journeymate.link";
 
 function Chatting() {
   const [name, setName] = useState("");

@@ -9,7 +9,7 @@ import { faComment as faCommentSolid } from "@fortawesome/free-solid-svg-icons";
 import { faSquarePlus, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../components/Modal";
 
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://api.journeymate.link/";
 
 const Community = () => {
   const navigate = useNavigate();
