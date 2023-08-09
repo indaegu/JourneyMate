@@ -39,7 +39,7 @@ const Tag = () => {
     }
     try {
       const response = await axios.post(
-        "http://localhost:3000/signup/part3",
+        "https://api.journeymate.link/signup/part3",
         {
           tags: tagList,
         },

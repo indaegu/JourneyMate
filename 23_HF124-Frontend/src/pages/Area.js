@@ -15,15 +15,14 @@ function AddressForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     try {
       const response = await axios.get(
-        `http://localhost:3000/signup/search-address?query=${addressInput}`
+        `https://api.journeymate.link/signup/search-address?query=${addressInput}`
       );
-  
+
       if (response.status === 200) {
         setAddressList(response.data);
-
       } else {
         console.error("주소 검색 실패", response.status);
       }
@@ -38,16 +37,19 @@ function AddressForm() {
       console.log({ selectedAddress: place_name });
 
       try {
-        const response = await fetch("http://localhost:3000/signup/part2", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            address: place_name,
-          }),
-          credentials: "include",
-        });
+        const response = await fetch(
+          "https://api.journeymate.link/signup/part2",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              address: place_name,
+            }),
+            credentials: "include",
+          }
+        );
 
         if (response.status === 200) {
           console.log("위치정보 입력 완료");
@@ -73,7 +75,11 @@ function AddressForm() {
       <form onSubmit={handleSubmit}>
         <label>
           주소 검색:
-          <input type="text" value={addressInput} onChange={handleInputChange} />
+          <input
+            type="text"
+            value={addressInput}
+            onChange={handleInputChange}
+          />
         </label>
         <input type="submit" value="주소 검색" />
       </form>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from 'axios'; // 추가
+import axios from "axios"; // 추가
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -15,22 +15,27 @@ function Login() {
     setPassword(e.target.value);
   };
 
-
-  const handleSubmit = async (e) => { // async 추가
+  const handleSubmit = async (e) => {
+    // async 추가
     e.preventDefault();
     if (userID && password) {
       try {
-        const response = await axios.post("http://localhost:3000/users/login", {
-          userID: userID,
-          password: password,
-        });
-        console.log(response.data)
+        const response = await axios.post(
+          "https://api.journeymate.link/users/login",
+          {
+            userID: userID,
+            password: password,
+          }
+        );
+        console.log(response.data);
         if (response.data.result) {
           // 토큰을 로컬 스토리지에 저장
           localStorage.setItem("jwtToken", response.data.userID);
 
           // axios 기본 헤더에 토큰 설정
-          axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.userID}`;
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${response.data.userID}`;
 
           // API 요청하는 콜마다 헤더에 accessToken 담아 보내도록 설정
           console.log(response.data.message);

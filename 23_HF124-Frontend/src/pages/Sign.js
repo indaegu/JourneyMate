@@ -40,9 +40,9 @@ const Sign = () => {
   const handleSubmit = async () => {
     if (!emailVerified) {
       alert("Please verify your email first.");
-      return; 
+      return;
     }
-    if(password !== checkpassword){
+    if (password !== checkpassword) {
       alert("비밀번호 재확인에 실패하였습니다.");
       return;
     }
@@ -50,21 +50,24 @@ const Sign = () => {
 
     try {
       // POST request to /signup endpoint with form data
-      const response = await fetch("http://localhost:3000/signup/part1", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user: user,
-          userID: userID,
-          password: password,
-          birth: birth,
-          email: email,
-          gender: inputs.gender === "man" ? "남자" : "여자", //assuming "man" means Male and else Female.
-        }),
-        credentials: "include",
-      });
+      const response = await fetch(
+        "https://api.journeymate.link/signup/part1",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: user,
+            userID: userID,
+            password: password,
+            birth: birth,
+            email: email,
+            gender: inputs.gender === "man" ? "남자" : "여자", //assuming "man" means Male and else Female.
+          }),
+          credentials: "include",
+        }
+      );
 
       // Check if signup was successful
       if (response.status === 200) {
@@ -82,7 +85,7 @@ const Sign = () => {
   const sendVerificationCode = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3000/signup/email-verification",
+        "https://api.journeymate.link/signup/email-verification",
         {
           method: "POST",
           body: JSON.stringify({ email }),

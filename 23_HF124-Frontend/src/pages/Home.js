@@ -96,7 +96,7 @@ const Home = () => {
       }
     };
   }, []);
-  const baseURL = "http://localhost:3000/";
+  const baseURL = "https://api.journeymate.link/";
   useEffect(() => {
     const fetchMarkerData = async () => {
       try {
