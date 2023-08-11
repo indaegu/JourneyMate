@@ -5,7 +5,7 @@ const { Op, Sequelize, QueryTypes } = require("sequelize");
 const { sequelize } = require("../config");
 
 // 이벤트 핸들러 등록 부분
-// 원래 'io.on'이 시작되는 부분을 다음과 같이 변경합니다.
+// 원래 'io.on'이 시작되는 부분을 다음과 같이 변경합니다..
 // function registerSocketHandlers() {
 //   const {io} = require('../app');
 
