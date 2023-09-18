@@ -1,25 +1,8 @@
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  useRef,
-  useCallback,
-} from "react";
+import React, { useState, useEffect,useContext, useRef, useCallback,} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBars,
-  faUser,
-  faArrowLeft,
-  faPaperPlane,
-  faChevronDown,
-  faSquarePlus,
-  faFile,
-  faImages,
-  faVideo,
-  faFilePdf,
-  faFileWord
+import { faBars, faUser, faArrowLeft, faPaperPlane, faChevronDown, faSquarePlus, faFile, faImages, faVideo, faFilePdf, faFileWord
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { SocketContext } from "../App";
@@ -48,7 +31,8 @@ const ChattingRoom = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [inputValue, setInputValue] = useState(""); // 채팅 입력값 저장
-  const [messages, setMessages] = useState([]); // 전송된 채팅 목록 저장
+  // const [messages, setMessages] = useState([]); // 전송된 채팅 목록 저장
+  const { messages,setMessages } = useContext(SocketContext);
   const [currentUser, setCurrentUser] = useState(null);
   const [page, setPage] = useState(1);
   const [isVisible, setIsVisible] = useState(false);
@@ -182,34 +166,34 @@ const ChattingRoom = () => {
     }
   }, [page]);
 
-  useEffect(() => {
-    if (!socket) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!socket) {
+  //     return;
+  //   }
 
-    const handleChatMessage = async (data) => {
+  //   const handleChatMessage = async (data) => {
       
-      if (data.roomID === Number(chatID)) {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            text: data.message,
-            self: false,
-            userID: data.userID,
-            profileImage: data.profileImage.profileImage,
-            messageType: data.messageType
-          },
-        ]);
-      }
-    };
+  //     if (data.roomID === Number(chatID)) {
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages,
+  //         {
+  //           text: data.message,
+  //           self: false,
+  //           userID: data.userID,
+  //           profileImage: data.profileImage.profileImage,
+  //           messageType: data.messageType
+  //         },
+  //       ]);
+  //     }
+  //   };
 
-    socket.on("chat_message", handleChatMessage);
+  //   socket.on("chat_message", handleChatMessage);
 
-    return () => {
-      socket.off("chat_message", handleChatMessage);
+  //   return () => {
+  //     socket.off("chat_message", handleChatMessage);
 
-    };
-  }, [socket, chatID]);
+  //   };
+  // }, [socket, chatID]);
 
   // 채팅방 정보 가져오기
   useEffect(() => {
@@ -423,7 +407,7 @@ const ChattingRoom = () => {
       // 실시간 메시지 배열에 추가하지 않고 'messages' 배열에 추가
       setMessages([
         ...messages,
-        { text: inputValue, self: true, userID: currentUser, messageType: 0 },
+        { roomID: Number(chatID), text: inputValue, self: true, userID: currentUser, messageType: 0 },
       ]);
       sendMessage(inputValue);
       setInputValue(""); // 입력값 초기화
@@ -649,6 +633,7 @@ const ChattingRoom = () => {
             })}
 
         {messages.map((message, index) => {
+          
           console.log(message);
           const currentMessageDate = new Date().toLocaleDateString();
           let showDate = false;
@@ -659,59 +644,64 @@ const ChattingRoom = () => {
           return(
             <>
             {showDate && <DateLabel>{currentMessageDate}</DateLabel>}
+            {message.roomID === Number(chatID) && (
+              
             <ChatContainer key={index} self={message.self}>
-            {!message.self && message.profileImage && (
-              <img
-                src={`${imgURL}${message.profileImage.replace(/\\/g, "/")}`}
-                alt="Profile"
-              />
+              {!message.self && message.profileImage && (
+                <img
+                  src={`${imgURL}${message.profileImage.replace(/\\/g, "/")}`}
+                  alt="Profile"
+                />
+              )}
+              <MessageContainer>
+                {!message.self && <UserID>{message.userID}</UserID>}
+                {message.messageType === 0 && (
+                  <ChatMessage self={message.self}>{message.text}</ChatMessage>
+                )}
+                {/* 이미지 메시지 */}
+                {message.messageType === 1 && (
+                  <ImageContainer>
+                    <img
+                      src={`${imgURL}${message.text.replace(/\\/g, "/")}`} 
+                      alt="Chat image" 
+                    />
+                    <button onClick={() => download(message.text)}>Download</button>
+                  </ImageContainer>
+                )}
+                {message.messageType === 2 && (
+                  <VideoContainer>
+                    <video controls>
+                      <source src={`${imgURL}${message.text.replace(/\\/g, "/")}`} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                    <button onClick={() => download(message.text)}>Download</button>
+                  </VideoContainer>
+                )}
+                {message.messageType===3 && (
+                  <DocumentContainer>
+                    <div 
+                      className="icon" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        download(message.text);
+                      }}
+                    >
+                      {message.text.endsWith('.pdf') && <FontAwesomeIcon icon={faFilePdf} />}
+                      {message.text.endsWith('.doc') || message.text.endsWith('.docx') && <FontAwesomeIcon icon={faFileWord} />}
+                    </div>
+                    </DocumentContainer>
+                )}
+                <MessageTime>
+                  {new Intl.DateTimeFormat("ko-KR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }).format(new Date())}
+                </MessageTime>
+              </MessageContainer>
+            </ChatContainer>
             )}
-            <MessageContainer>
-              {!message.self && <UserID>{message.userID}</UserID>}
-              {message.messageType === 0 && (
-                <ChatMessage self={message.self}>{message.text}</ChatMessage>
-              )}
-              {/* 이미지 메시지 */}
-              {message.messageType === 1 && (
-                <ImageContainer>
-                  <img
-                    src={`${imgURL}${message.text.replace(/\\/g, "/")}`} 
-                    alt="Chat image" 
-                  />
-                  <button onClick={() => download(message.text)}>Download</button>
-                </ImageContainer>
-              )}
-              {message.messageType === 2 && (
-                <VideoContainer>
-                  <video controls>
-                    <source src={`${imgURL}${message.text.replace(/\\/g, "/")}`} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  <button onClick={() => download(message.text)}>Download</button>
-                </VideoContainer>
-              )}
-              {message.messageType===3 && (
-                <DocumentContainer>
-                  <div 
-                    className="icon" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      download(message.text);
-                    }}
-                  >
-                    {message.text.endsWith('.pdf') && <FontAwesomeIcon icon={faFilePdf} />}
-                    {message.text.endsWith('.doc') || message.text.endsWith('.docx') && <FontAwesomeIcon icon={faFileWord} />}
-                  </div>
-                  </DocumentContainer>
-              )}
-              <MessageTime>
-                {new Intl.DateTimeFormat("ko-KR", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }).format(new Date())}
-              </MessageTime>
-            </MessageContainer>
-          </ChatContainer>
+            
+          
           </>
           )
               
@@ -801,9 +791,12 @@ const IconBox =styled.div`
   position: relative;
 `
 const IconContainer = styled.div`
+position: relative;
 display: flex;
 justify-content: space-around;
 padding: 10px 0;
+z-index: 1001;
+transform: translateZ(0); // 별도의 스택링 컨텍스트를 생성합니다.
 `;
 
 const Icon = styled(FontAwesomeIcon)`
@@ -856,7 +849,9 @@ const ModalImage = styled.div`
   }
 `;
 
-const RoomContainer = styled.div``;
+const RoomContainer = styled.div`
+
+`;
 
 const TopContainer = styled.div`
   position: relative;
@@ -870,7 +865,7 @@ const Header = styled.div`
   top: 0;
   width: 640px;
   height: 70px;
-  z-index: 100; // Optional: ensure the header is always on top
+  z-index: 0; // Optional: ensure the header is always on top
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1085,6 +1080,7 @@ const ScrollToBottomButton = styled.button`
   position: fixed;
   bottom: 120px;
   cursor: pointer; // 커서 모양 변경
+  z-index: 0;
   transition: background-color 0.3s; // 배경색 변경 애니메이션 효과
   &:hover {
     background-color: rgba(0, 0, 0, 0.05); // 약한 회색 배경색
